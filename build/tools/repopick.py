@@ -462,6 +462,8 @@ if __name__ == '__main__':
                 'Since there is no project directory for {1} skipping {0}.\n'
                 .format(item['id'], item['project']))
             continue
+        elif item['project'] == 'platform_manifest':
+            project_path = '.repo/manifests'
         else:
             cprint.fail(
                 'Could not determine project path of {1} for {0}.\n'
