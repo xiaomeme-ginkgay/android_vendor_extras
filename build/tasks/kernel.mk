@@ -364,18 +364,7 @@ kerneltags: $(KERNEL_CONFIG)
 	$(hide) mkdir -p $(KERNEL_OUT)
 	$(call make-kernel-target,tags)
 
-.PHONY: kernelconfig kernelxconfig kernelsavedefconfig alldefconfig
-
-kernelconfig:  KERNELCONFIG_MODE := menuconfig
-kernelxconfig: KERNELCONFIG_MODE := xconfig
-kernelxconfig kernelconfig:
-	$(hide) mkdir -p $(KERNEL_OUT)
-	$(call make-kernel-target,$(KERNEL_DEFCONFIG))
-	env KCONFIG_NOTIMESTAMP=true \
-		 $(call make-kernel-target,$(KERNELCONFIG_MODE))
-	env KCONFIG_NOTIMESTAMP=true \
-		 $(call make-kernel-target,savedefconfig)
-	cp $(KERNEL_OUT)/defconfig $(KERNEL_DEFCONFIG_SRC)
+.PHONY: kernelsavedefconfig alldefconfig
 
 kernelsavedefconfig:
 	$(hide) mkdir -p $(KERNEL_OUT)
