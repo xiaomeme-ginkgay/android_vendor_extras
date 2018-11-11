@@ -451,24 +451,25 @@ if __name__ == '__main__':
         #   - check that the project path exists
         project_path = None
 
-        if item['project'] in project_name_to_data and item[
-                'branch'] in project_name_to_data[item['project']]:
-            project_path = project_name_to_data[item['project']][
-                item['branch']]
-        elif args.path:
-            project_path = args.path
-        elif args.ignore_missing:
-            cprint.warn(
-                'Since there is no project directory for {1} skipping {0}.\n'
-                .format(item['id'], item['project']))
-            continue
-        elif item['project'] == 'platform_manifest':
-            project_path = '.repo/manifests'
+        if item['project'] == "android_manifest" :
+            project_path=".repo/manifests/"
         else:
-            cprint.fail(
-                'Could not determine project path of {1} for {0}.\n'
-                .format(item['id'], item['project']))
-            sys.exit(1)
+            if item['project'] in project_name_to_data and item[
+                    'branch'] in project_name_to_data[item['project']]:
+                project_path = project_name_to_data[item['project']][
+                    item['branch']]
+            elif args.path:
+                project_path = args.path
+            elif args.ignore_missing:
+                cprint.warn(
+                    'Since there is no project directory for {1} skipping {0}.\n'
+                    .format(item['id'], item['project']))
+                continue
+            else:
+                cprint.fail(
+                    'Could not determine project path of {1} for {0}.\n'
+                    .format(item['id'], item['project']))
+                sys.exit(1)
 
         # If --start-branch is given, create the branch (more than once per path is okay; repo ignores gracefully)
         if args.start_branch:
