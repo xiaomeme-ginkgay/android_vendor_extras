@@ -31,6 +31,16 @@ ifneq ($(filter msm8996 msm8998,$(TARGET_BOARD_PLATFORM)),)
     TARGET_USES_COLOR_METADATA := true
 endif
 
+
+# Mark GRALLOC_USAGE_PRIVATE_WFD as valid gralloc bits
+TARGET_ADDITIONAL_GRALLOC_10_USAGE_BITS ?= 0
+TARGET_ADDITIONAL_GRALLOC_10_USAGE_BITS += | (1 << 21)
+
+# Mark GRALLOC_USAGE_PRIVATE_10BIT_TP as valid gralloc bits on UM platforms that support it
+ifeq ($(call is-board-platform-in-list, $(UM_4_9_FAMILY)),true)
+    TARGET_ADDITIONAL_GRALLOC_10_USAGE_BITS += | (1 << 27)
+endif
+
 # List of targets that use master side content protection
 MASTER_SIDE_CP_TARGET_LIST := msm8996 msm8998 sdm660
 
