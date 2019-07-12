@@ -82,6 +82,7 @@ DTC := $(HOST_OUT_EXECUTABLES)/dtc
 DTBS_OUT := $(PRODUCT_OUT)/dtbs
 KERNEL_OUT := $(TARGET_OUT_INTERMEDIATES)/KERNEL_OBJ
 KERNEL_CONFIG := $(KERNEL_OUT)/.config
+KERNEL_RELEASE := $(KERNEL_OUT)/include/config/kernel.release
 
 KERNEL_DEFCONFIG_SRC := $(KERNEL_SRC)/arch/$(KERNEL_ARCH)/configs/$(KERNEL_DEFCONFIG)
 
@@ -346,7 +347,8 @@ INSTALLED_KERNEL_MODULES: depmod-host
 	$(hide) if grep -q '=m' $(KERNEL_CONFIG); then \
 			echo -e ${CL_GRN}"Installing Kernel Modules"${CL_RST}; \
 			$(call make-kernel-target,INSTALL_MOD_PATH=$(MODULES_INTERMEDIATES) modules_install); \
-			modules=$$(find $(MODULES_INTERMEDIATES) -type f -name '*.ko'); \
+			kernel_release=$$(cat $(KERNEL_RELEASE)) \
+			modules=$$(find $(MODULES_INTERMEDIATES)/lib/modules/$$kernel_release -type f -name '*.ko'); \
 			for f in $$modules; do \
 				$(KERNEL_TOOLCHAIN_PATH)strip --strip-unneeded $$f; \
 			done; \
