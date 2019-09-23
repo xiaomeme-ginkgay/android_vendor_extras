@@ -16,7 +16,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
 import os
 import os.path
 import sys
@@ -47,15 +46,15 @@ repositories = []
 # repo check
 branch_check = r'external/bson'
 if os.path.exists(branch_check):
-    du_branch = "p9x-caf";
+    du_branch = "q10x-caf";
 else:
-    du_branch = "p9x";
+    du_branch = "q10x";
 
 # gapps
 repo_check = r'vendor/pixelgapps'
 gapps_location = 'vendor/pixelgapps'
 gapps_git = 'https://gitlab.com/DirtyUnicorns/android_vendor_pixelgapps'
-gapps_branch = 'p9x'
+gapps_branch = 'q10x'
 
 page = 1
 while not depsonly:
