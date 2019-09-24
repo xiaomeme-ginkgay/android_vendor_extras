@@ -56,6 +56,12 @@ gapps_location = 'vendor/pixelgapps'
 gapps_git = 'https://gitlab.com/DirtyUnicorns/android_vendor_pixelgapps'
 gapps_branch = 'q10x'
 
+# vendor_images
+repo_check = r'vendor/images'
+images_location = 'vendor/images'
+images_git = 'https://gitlab.com/DirtyUnicorns/android_vendor_images'
+images_branch = 'q10x'
+
 page = 1
 while not depsonly:
     request = Request("https://api.github.com/users/DirtyUnicorns/repos?page=%d" % page)
@@ -260,6 +266,15 @@ def fetch_pixel_gapps(repo_path):
                 git("clone", gapps_git, "-b", gapps_branch, gapps_location)
                 add_gitlab_to_manifest([{'repository':gapps_git.replace("https://gitlab.com/", ""),'target_path':gapps_location,'branch':gapps_branch}])
 
+def fetch_vendor_images(repo_path):
+    images_path = repo_path + '/du.mk'
+    with open(images_path, 'r') as f:
+        for line in f.readlines():
+            if 'BOARD_PREBUILT_VENDORIMAGE' in line:
+                print 'Fetching project ' + images_git.replace("https://gitlab.com/", "")
+                git("clone", images_git, "-b", images_branch, images_location)
+                add_gitlab_to_manifest([{'repository':images_git.replace("https://gitlab.com/", ""),'target_path':images_location,'branch':images_branch}])
+
 def fetch_dependencies(repo_path):
     print 'Looking for dependencies'
     dependencies_path = repo_path + '/du.dependencies'
@@ -287,6 +302,7 @@ def fetch_dependencies(repo_path):
         print 'Syncing dependencies'
         if not os.path.exists(repo_check):
             fetch_pixel_gapps(repo_path)
+            fetch_vendor_images(repo_path)
         os.system('repo sync %s' % ' '.join(syncable_repos))
 
 if depsonly:
