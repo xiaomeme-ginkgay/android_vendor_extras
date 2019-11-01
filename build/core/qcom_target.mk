@@ -11,12 +11,6 @@ $(if $(USE_DEVICE_SPECIFIC_$(1)), \
 $(call project-set-path,qcom-$(2),$(strip $(path)))
 endef
 
-ifeq ($(BOARD_USES_QCOM_HARDWARE),true)
-    BOARD_USES_QTI_HARDWARE := true
-endif
-
-ifeq ($(BOARD_USES_QTI_HARDWARE),true)
-
 $(call set-device-specific-path,AUDIO,audio,hardware/qcom-caf/$(QCOM_HARDWARE_VARIANT)/audio)
 $(call set-device-specific-path,DISPLAY,display,hardware/qcom-caf/$(QCOM_HARDWARE_VARIANT)/display)
 $(call set-device-specific-path,MEDIA,media,hardware/qcom-caf/$(QCOM_HARDWARE_VARIANT)/media)
@@ -28,5 +22,3 @@ $(call set-device-specific-path,WLAN,wlan,hardware/qcom-caf/wlan)
 
 PRODUCT_CFI_INCLUDE_PATHS += \
     hardware/qcom-caf/wlan/qcwcn/wpa_supplicant_8_lib
-
-endif
