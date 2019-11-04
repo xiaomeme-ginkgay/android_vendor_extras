@@ -273,7 +273,6 @@ if __name__ == '__main__':
             cprint.fail(
                 'You must run this tool from within $ANDROID_BUILD_TOP!\n'
             )
-            sys.exit(1)
         os.chdir(os.environ['ANDROID_BUILD_TOP'])
 
     # Sanity check that we are being run from the top level of the tree
