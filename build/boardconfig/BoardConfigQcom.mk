@@ -1,3 +1,6 @@
+# Bring in Qualcomm helper macros
+include vendor/extras/build/core/qcom_utils.mk
+
 A_FAMILY := msm7x27a msm7x30 msm8660 msm8960
 B_FAMILY := msm8226 msm8610 msm8974
 B64_FAMILY := msm8992 msm8994
@@ -45,7 +48,6 @@ MASTER_SIDE_CP_TARGET_LIST := msm8996 msm8998 sdm660
 
 # Every qcom platform is considered a vidc target
 MSM_VIDC_TARGET_LIST := $(TARGET_BOARD_PLATFORM)
-
 ifeq ($(call is-board-platform-in-list, $(A_FAMILY)),true)
     QCOM_HARDWARE_VARIANT := msm8960
 else
@@ -67,5 +69,4 @@ endif
 endif
 endif
 endif
-
 PRODUCT_SOONG_NAMESPACES += hardware/qcom-caf/$(QCOM_HARDWARE_VARIANT)
