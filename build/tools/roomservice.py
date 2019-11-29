@@ -17,12 +17,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import sys
+sys.dont_write_bytecode = True
 import os
 import os.path
 import sys
 import urllib2
 import json
 import re
+import cprint
 from subprocess import Popen, PIPE
 from urllib2 import urlopen, Request
 from xml.etree import ElementTree
@@ -48,37 +51,10 @@ if the repository format is different from these examples, the repo gets rejecte
 """
 REPO_PATTERN = re.compile(r'(?:https?:\/\/www\.)?(?P<remote>\w+)\.\w+\/([\w-]+)\/([\w-]+)$|(^[\w-]+)\/([\w-]+)$')
 
-# Colors for formatted print
-BOLD = '\033[1m'
-CPASS = '\033[92m'
-CWARN = '\033[93m'
-CFAIL = '\033[91m'
-CEND = '\033[0m'
-
 # Error message when user exits from processes
 USER_ABORT_MSG = '\nBailing out, process aborted by the user.\n'
 # Documentation for getting a personal access token
 GH_TOKEN_HELP = 'https://help.github.com/en/github/authenticating-to-github/creating-a-personal-access-token-for-the-command-line'
-
-def print_bold(msg):
-    """ Prints in bold """
-    print(BOLD + msg + CEND)
-
-def print_pass(msg):
-    """ Prints with green """
-    print(CPASS + msg + CEND)
-
-def print_warn(msg):
-    """ Prints with yellow """
-    print(CWARN + msg + CEND)
-
-def print_fail(msg):
-    """ Prints with red """
-    print(CFAIL + msg + CEND)
-
-def color_exit(msg):
-    """ Exits with red output """
-    exit(CFAIL + msg + CEND)
 
 def get_github_token():
     """ Allows to get the GitHub access token from file """
@@ -206,7 +182,7 @@ def add_to_manifest(repositories):
         org, name, remote = process_repo(repo['repository'])
 
         if not org:
-            print_fail("Skipping %s as it's not valid, please check its syntax." % repo['repository'])
+            cprint.fail("Skipping %s as it's not valid, please check its syntax." % repo['repository'])
             continue
 
         # If we reached here, the repo is valid
@@ -220,7 +196,7 @@ def add_to_manifest(repositories):
                 existing_project.set('revision', branch)
             continue
 
-        print_pass('-- Adding dependency: %s/%s' % (org, name))
+        cprint.success('-- Adding dependency: %s/%s' % (org, name))
 
         project = ElementTree.Element('project', attrib = {'path': target,
             'remote': remote, 'name': org + '/' + name, 'revision': branch})
@@ -236,7 +212,7 @@ def add_to_manifest(repositories):
     f.close()
 
 def fetch_dependencies(repo_path):
-    print_bold('\n- Looking for dependencies..')
+    cprint.bold('\n- Looking for dependencies..')
 
     dependencies_path = repo_path + '/' + DEPENDENCY_FILE
 
@@ -259,7 +235,7 @@ def fetch_dependencies(repo_path):
 
             # If it's not a valid entry (regex fails)
             if not org:
-                print_warn("Skipping %s as it's not valid.\nPlease check its syntax in %s." % (dep['repository'], DEPENDENCY_FILE))
+                cprint.warn("Skipping %s as it's not valid.\nPlease check its syntax in %s." % (dep['repository'], DEPENDENCY_FILE))
                 continue
 
             # If the dependency is not inside the LOCAL_MANIFEST
@@ -272,12 +248,12 @@ def fetch_dependencies(repo_path):
 
         # If new manifest entries have to be added
         if fetch_list:
-            print_bold('\n- Adding dependencies to local manifest..')
+            cprint.bold('\n- Adding dependencies to local manifest..')
             add_to_manifest(fetch_list)
 
         # Synchronise repos
         if syncable_repos:
-            print_bold('\n- Syncing dependencies..')
+            cprint.bold('\n- Syncing dependencies..')
             sync_repos(syncable_repos)
 
     else:
@@ -315,7 +291,7 @@ def sync_repos(repos):
         color_exit(USER_ABORT_MSG)
 
 if __name__ == "__main__":
-    print_bold('\n~ Welcome to roomservice, setting up device\n')
+    cprint.bold('\n~ Welcome to roomservice, setting up device\n')
 
     # Target to build
     product = sys.argv[1]
@@ -324,7 +300,7 @@ if __name__ == "__main__":
     try:
         device = product[product.index("_") + 1:]
     except ValueError:
-        color_exit("The target you entered wouldn't work, use instead du_{0}\n".format(product))
+        exit("The target you entered wouldn't work, use instead du_{0}\n".format(product))
 
     # Whether we need to just fetch dependencies or not
     if len(sys.argv) > 2:
@@ -338,33 +314,33 @@ if __name__ == "__main__":
 
     # If the device lunched doesn't exist in a local directory, try to sync it from the remote repo
     if not depsonly:
-        print_warn('Device not found in local repositories.\nAttempting to retrieve it from %s..' % DEFAULT_ORG)
+        cprint.warn('Device not found in local repositories.\nAttempting to retrieve it from %s..' % DEFAULT_ORG)
 
         # Construct Organisation/android_device_<product>_<device> string
         device_repo = gather_device_repo(device)
 
         if device_repo:
-                print_pass('Device repository exists on remote, preparing synchronization..')
+                cprint.success('Device repository exists on remote, preparing synchronization..')
 
                 # product can be get from device_repo by splitting
                 product = device_repo.split('_')[2]
                 # Target path
                 repo_path = 'device/%s/%s' % (product, device)
 
-                print_bold('\n- Adding device to local manifest..')
+                cprint.bold('\n- Adding device to local manifest..')
                 add_to_manifest([{'repository': DEFAULT_ORG + '/' + device_repo, 'target_path': repo_path,'branch': DEFAULT_BRANCH}])
 
-                print_bold('\n- Syncing device tree..')
+                cprint.bold('\n- Syncing device tree..')
                 sync_repos(repo_path)
 
                 # Fetch dependencies
                 fetch_dependencies(repo_path)
         else:
             # Repo not found
-            print_fail('\nRepository for %s not found in the DU Github repository list.\nIf this is in error, you may need to manually add it to the %s\n' % (device, LOCAL_MANIFEST_PATH))
+            cprint.fail('\nRepository for %s not found in the DU Github repository list.\nIf this is in error, you may need to manually add it to the %s\n' % (device, LOCAL_MANIFEST_PATH))
     else:
         repo_path = get_from_manifest(device)
         if repo_path:
             fetch_dependencies(repo_path)
         else:
-            print_fail('Trying dependencies-only mode on a non-existing device tree?\n')
+            cprint.fail('Trying dependencies-only mode on a non-existing device tree?\n')
