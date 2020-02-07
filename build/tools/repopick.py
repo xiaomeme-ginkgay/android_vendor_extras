@@ -50,6 +50,21 @@ except ImportError:
         urllib.request = urllib2
 
 
+# the .gerritrc is file is useless when you can just use environmental variables
+# plus in python you have to use a list with an index and you gotta split() nah fuck that
+
+def getGerritPass():
+    if ("GERRITPASS" in os.environ):
+        return os.environ.get("GERRITPASS")
+
+def getGerritUser():
+    if ("GERRITUSER" in os.environ):
+        return os.environ.get("GERRITUSER")
+
+def getGerritURL():
+    if ("GERRITURL" in os.environ):
+        return os.environ.get("GERRITURL")
+
 # Verifies whether pathA is a subdirectory (or the same) as pathB
 def is_subdir(a, b):
     a = os.path.realpath(a) + '/'
@@ -116,6 +131,23 @@ def fetch_query_via_ssh(remote_url, query):
 def fetch_query_via_http(remote_url, query):
     if "requests" in sys.modules:
         auth = None
+    if ("GERRITPASS" in os.environ):
+        auth = requests.auth.HTTPBasicAuth(username=getGerritUser(),
+                                                       password=getGerritPass())
+        statusCode = '-1'
+        if auth:
+            url = '{0}/a/changes/?q={1}&o=CURRENT_REVISION&o=ALL_REVISIONS&o=ALL_COMMITS'.format(
+                remote_url, query)
+            data = requests.get(url, auth=auth)
+            statusCode = str(data.status_code)
+        if statusCode != '200':
+            #They didn't get good authorization or data, Let's try the old way
+            url = '{0}/changes/?q={1}&o=CURRENT_REVISION&o=ALL_REVISIONS&o=ALL_COMMITS'.format(
+                remote_url, query)
+            data = requests.get(url)
+        reviews = json.loads(data.text[5:])
+
+    elif ("GERRITPASS" not in os.environ):
         if os.path.isfile(os.getenv("HOME") + "/.gerritrc"):
             f = open(os.getenv("HOME") + "/.gerritrc", "r")
             for line in f:
