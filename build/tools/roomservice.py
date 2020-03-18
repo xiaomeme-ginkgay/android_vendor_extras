@@ -22,12 +22,18 @@ sys.dont_write_bytecode = True
 import os
 import os.path
 import sys
-import urllib2
+
+if sys.version_info < (3, 8):
+    import urllib2
+    from urllib2 import urlopen, Request
+else:
+    import urllib
+    import urllib.request
+
 import json
 import re
 import cprint
 from subprocess import Popen, PIPE
-from urllib2 import urlopen, Request
 from xml.etree import ElementTree
 
 # Default properties
@@ -39,6 +45,8 @@ DEPENDENCY_FILE = 'du.dependencies'
 # Where the local manifest path is located
 LOCAL_MANIFEST_PATH = '.repo/local_manifests'
 LOCAL_MANIFEST= LOCAL_MANIFEST_PATH + '/du_manifest.xml'
+# Github api
+GITHUB_API = 'https://api.github.com/users/%s/repos?page=%d&per_page=100'
 
 # XML header for local_manifest
 XML_HEADER = '<?xml version="1.0" encoding="UTF-8"?>\n'
@@ -75,13 +83,20 @@ def gather_device_repo(device_name):
     # Access token for GitHub
     token = get_github_token()
     while True:
-        req = Request('https://api.github.com/users/%s/repos?page=%d&per_page=100' % (DEFAULT_ORG, page))
+        if sys.version_info < (3, 8):
+            req = Request(GITHUB_API % (DEFAULT_ORG, page))
+        else:
+            req = urllib.request.Request(GITHUB_API % (DEFAULT_ORG, page))
 
         if token:
             req.add_header('Authorization', 'token %s' % token)
 
         try:
-            resp = json.loads(urllib2.urlopen(req).read())
+            if sys.version_info < (3, 8):
+                resp = json.loads(urllib2.urlopen(req).read())
+            else:
+                resp = json.loads(urllib.request.urlopen(req).read().decode())
+
         except urllib2.HTTPError as e:
             if e.code == 403:
                 color_exit('You were limited by GitHub, create a personal access token and write it inside $HOME/api_token\ncat $HOME/api_token >> <YOUR_API_TOKEN>\nFor more information on access token visit:\n%s' % GH_TOKEN_HELP)
@@ -204,7 +219,10 @@ def add_to_manifest(repositories):
         lm.append(project)
 
     indent(lm, 0)
-    raw_xml = XML_HEADER + ElementTree.tostring(lm)
+    if sys.version_info < (3, 8):
+        raw_xml = XML_HEADER + ElementTree.tostring(lm)
+    else:
+        raw_xml = XML_HEADER + ElementTree.tostring(lm).decode()
 
     # Write on file
     f = open(LOCAL_MANIFEST, 'w')
