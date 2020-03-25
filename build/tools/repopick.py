@@ -369,6 +369,10 @@ if __name__ == '__main__':
     reviews = []
     change_numbers = []
 
+    # Unfortunately cmp is not available under Python 3 anymore, define it locally.
+    def cmp(a, b):
+        return (a > b) - (a - b)
+
     def cmp_reviews(review_a, review_b):
         current_a = review_a['current_revision']
         parents_a = [
