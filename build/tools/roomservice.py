@@ -40,6 +40,7 @@ from xml.etree import ElementTree
 DEFAULT_REMOTE = 'github'
 DEFAULT_ORG = 'DirtyUnicorns'
 DEFAULT_BRANCH = 'q10x'
+GERRIT_REMOTE = 'gerrit'
 # Dependency file name
 DEPENDENCY_FILE = 'du.dependencies'
 # Where the local manifest path is located
@@ -194,27 +195,23 @@ def add_to_manifest(repositories):
         lm = ElementTree.Element('manifest')
 
     for repo in repositories:
-        org, name, remote = process_repo(repo['repository'])
+        name, remote = process_repo(repo['repository'])
 
-        if not org:
-            cprint.fail("Skipping %s as it's not valid, please check its syntax." % repo['repository'])
-            continue
-
-        # If we reached here, the repo is valid
         branch = repo['branch']
         target = repo['target_path']
 
         existing_project = exists_in_tree_device(lm, name)
         if existing_project != None:
             if existing_project.attrib['revision'] != branch:
-                print('-- Updating branch for %s/%s to %s' % (org, name, branch))
+                print('-- Updating branch for %s to %s' % (name, branch))
                 existing_project.set('revision', branch)
             continue
 
-        cprint.success('-- Adding dependency: %s/%s' % (org, name))
+        cprint.success('-- Adding dependency: %s' % (name))
+
 
         project = ElementTree.Element('project', attrib = {'path': target,
-            'remote': remote, 'name': org + '/' + name, 'revision': branch})
+            'remote': remote, 'name': name, 'revision': branch})
 
         lm.append(project)
 
@@ -249,15 +246,10 @@ def fetch_dependencies(repo_path):
         # List containing the repositories to be added inside LOCAL_MANIFEST
         fetch_list = []
         for dep in dependencies:
-            org, name, remote = process_repo(dep['repository'])
-
-            # If it's not a valid entry (regex fails)
-            if not org:
-                cprint.warn("Skipping %s as it's not valid.\nPlease check its syntax in %s." % (dep['repository'], DEPENDENCY_FILE))
-                continue
+            name, remote = process_repo(dep['repository'])
 
             # If the dependency is not inside the LOCAL_MANIFEST
-            if not is_in_manifest(org + '/' + name, dep['branch']):
+            if not is_in_manifest(name, dep['branch']):
                 fetch_list.append(dep)
 
             # If the repository doesn't exist, append it to the syncable repos
@@ -281,20 +273,23 @@ def process_repo(repo):
     # Apply regex
     m = re.match(REPO_PATTERN, repo)
     # Initializing elements
-    org = name = remote = None
+    name = remote = None
 
     # Fill elements with splitted values
     if (m):
         if m.group('remote'):
-            org = m.group(2)
-            name = m.group(3)
+            # org/repository
+            name = m.group(2) + '/' + m.group(3)
             remote = m.group('remote')
         else:
-            org = m.group(4)
-            name = m.group(5)
+            name = m.group(4) + '/' + m.group(5)
             remote = DEFAULT_REMOTE
+    # If it doesn't match the regex, use gerrit for syncing
+    else:
+        name = repo
+        remote = GERRIT_REMOTE
 
-    return (org, name, remote)
+    return (name, remote)
 
 def sync_repos(repos):
     try:
