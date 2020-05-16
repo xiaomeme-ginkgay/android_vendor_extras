@@ -295,9 +295,9 @@ def sync_repos(repos):
     try:
         # If it's a list, we need to unpack it
         if type(repos) == list:
-            p = Popen(['repo', 'sync'] + repos)
+            p = Popen(['repo', 'sync', '--force-sync'] + repos)
         else:
-            p = Popen(['repo', 'sync', repos])
+            p = Popen(['repo', 'sync', '--force-sync', repos])
 
         out, err = p.communicate()
     except KeyboardInterrupt:
