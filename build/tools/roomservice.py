@@ -100,13 +100,13 @@ def gather_device_repo(device_name):
 
         except urllib2.HTTPError as e:
             if e.code == 403:
-                color_exit('You were limited by GitHub, create a personal access token and write it inside $HOME/api_token\ncat $HOME/api_token >> <YOUR_API_TOKEN>\nFor more information on access token visit:\n%s' % GH_TOKEN_HELP)
+                cprint._exit('You were limited by GitHub, create a personal access token and write it inside $HOME/api_token\ncat $HOME/api_token >> <YOUR_API_TOKEN>\nFor more information on access token visit:\n%s' % GH_TOKEN_HELP)
             elif e.code == 401:
-                color_exit('The GitHub access token you have used is invalid.\n')
+                cprint._exit('The GitHub access token you have used is invalid.\n')
             else:
-                color_exit('%d: %s' % (e.code, e.reason))
+                cprint._exit('%d: %s' % (e.code, e.reason))
         except urllib2.URLError as e:
-            color_exit(e.reason)
+            cprint._exit(e.reason)
 
         # If we do not have more items, get out.
         if not resp:
@@ -241,7 +241,7 @@ def fetch_dependencies(repo_path):
             dep_file.close()
 
         if len(dependencies) == 0:
-            color_exit('%s exists but it is empty.' % DEPENDENCY_FILE)
+            cprint._exit('%s exists but it is empty.' % DEPENDENCY_FILE)
 
         # List containing the repositories to be added inside LOCAL_MANIFEST
         fetch_list = []
@@ -267,7 +267,7 @@ def fetch_dependencies(repo_path):
             sync_repos(syncable_repos)
 
     else:
-        color_exit('Dependencies file not found, bailing out.')
+        cprint._exit('Dependencies file not found, bailing out.')
 
 def process_repo(repo):
     # Apply regex
@@ -301,7 +301,7 @@ def sync_repos(repos):
 
         out, err = p.communicate()
     except KeyboardInterrupt:
-        color_exit(USER_ABORT_MSG)
+        cprint._exit(USER_ABORT_MSG)
 
 if __name__ == "__main__":
     cprint.bold('\n~ Welcome to roomservice, setting up device\n')

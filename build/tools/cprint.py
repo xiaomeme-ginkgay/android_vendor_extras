@@ -40,3 +40,6 @@ def fail(msg):
     """ Red """
     print(CFAIL + msg + CEND)
 
+def _exit(msg):
+    """ Exits with red output """
+    exit(CFAIL + msg + CEND)
