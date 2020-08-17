@@ -333,9 +333,6 @@ $(KERNEL_CONFIG): $(KERNEL_DEFCONFIG_SRC) $(KERNEL_ADDITIONAL_CONFIG_OUT)
 
 $(TARGET_PREBUILT_INT_KERNEL): $(KERNEL_CONFIG) $(DTC)
 	echo -e ${CL_GRN}"Building Kernel"${CL_RST}
-	$(hide) rm -rf $(KERNEL_MODULES_OUT)
-	$(hide) mkdir -p $(KERNEL_MODULES_OUT)
-	$(hide) rm -rf $(KERNEL_DEPMOD_STAGING_DIR)
 	$(call make-kernel-target,$(BOARD_KERNEL_IMAGE_NAME))
 	$(hide) if grep -q '^CONFIG_OF=y' $(KERNEL_CONFIG); then \
 			echo -e ${CL_GRN}"Building DTBs"${CL_RST}; \
@@ -348,6 +345,9 @@ $(TARGET_PREBUILT_INT_KERNEL): $(KERNEL_CONFIG) $(DTC)
 
 .PHONY: INSTALLED_KERNEL_MODULES
 INSTALLED_KERNEL_MODULES: depmod-host
+	$(hide) rm -rf $(KERNEL_MODULES_OUT)
+	$(hide) mkdir -p $(KERNEL_MODULES_OUT)
+	$(hide) rm -rf $(KERNEL_DEPMOD_STAGING_DIR)
 	$(hide) if grep -q '^CONFIG_MODULES=y' $(KERNEL_CONFIG); then \
 			echo -e ${CL_GRN}"Installing Kernel Modules"${CL_RST}; \
 			$(call make-kernel-target,INSTALL_MOD_PATH=../../$(KERNEL_MODULES_INSTALL) modules_install) && \
