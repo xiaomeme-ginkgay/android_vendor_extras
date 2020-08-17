@@ -5,7 +5,7 @@ A_FAMILY := msm7x27a msm7x30 msm8660 msm8960
 B_FAMILY := msm8226 msm8610 msm8974
 B64_FAMILY := msm8992 msm8994
 BR_FAMILY := msm8909 msm8916
-UM_FAMILY := msm8937 msm8953 msm8996
+UM_FAMILY := msm8937 msm8953 msm8996 msm8998 sdm660
 
 BOARD_USES_ADRENO := true
 
