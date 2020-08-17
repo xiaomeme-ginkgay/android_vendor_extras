@@ -338,7 +338,7 @@ $(TARGET_PREBUILT_INT_KERNEL): $(KERNEL_CONFIG) $(DTC)
 			echo -e ${CL_GRN}"Building DTBs"${CL_RST}; \
 			$(call make-kernel-target,dtbs); \
 		fi
-	$(hide) if grep -q '^CONFIG_MODULES=y' $(KERNEL_CONFIG); then \
+	$(hide) if grep -q '=m' $(KERNEL_CONFIG); then \
 			echo -e ${CL_GRN}"Building Kernel Modules"${CL_RST}; \
 			$(call make-kernel-target,modules); \
 		fi
@@ -348,7 +348,7 @@ INSTALLED_KERNEL_MODULES: depmod-host
 	$(hide) rm -rf $(KERNEL_MODULES_OUT)
 	$(hide) mkdir -p $(KERNEL_MODULES_OUT)
 	$(hide) rm -rf $(KERNEL_DEPMOD_STAGING_DIR)
-	$(hide) if grep -q '^CONFIG_MODULES=y' $(KERNEL_CONFIG); then \
+	$(hide) if grep -q '=m' $(KERNEL_CONFIG); then \
 			echo -e ${CL_GRN}"Installing Kernel Modules"${CL_RST}; \
 			$(call make-kernel-target,INSTALL_MOD_PATH=../../$(KERNEL_MODULES_INSTALL) modules_install) && \
 			mofile=$$(find $(KERNEL_MODULES_OUT) -type f -name modules.order) && \
