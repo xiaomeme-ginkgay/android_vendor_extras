@@ -5,12 +5,12 @@ A_FAMILY := msm7x27a msm7x30 msm8660 msm8960
 B_FAMILY := msm8226 msm8610 msm8974
 B64_FAMILY := msm8992 msm8994
 BR_FAMILY := msm8909 msm8916
-UM_FAMILY := msm8937 msm8953 msm8996 msm8998 sdm660
+UM_3_18_FAMILY := msm8937 msm8953 msm8996
+UM_4_4_FAMILY := msm8998 sdm660
+UM_PLATFORMS := $(UM_3_18_FAMILY) $(UM_4_4_FAMILY)
 
 BOARD_USES_ADRENO := true
-
 BOARD_USES_QTI_HARDWARE := true
-
 TARGET_USES_QCOM_BSP := true
 
 # Tell HALs that we're compiling an AOSP build with an in-line kernel
@@ -29,10 +29,9 @@ endif
 TARGET_USES_QCOM_MM_AUDIO := true
 
 # Enable color metadata for 8xx UM targets
-ifneq ($(filter msm8996 msm8998,$(TARGET_BOARD_PLATFORM)),)
+ifneq ($(filter $(UM_PLATFORMS),$(TARGET_BOARD_PLATFORM)),)
     TARGET_USES_COLOR_METADATA := true
 endif
-
 
 # Mark GRALLOC_USAGE_PRIVATE_WFD as valid gralloc bits
 TARGET_ADDITIONAL_GRALLOC_10_USAGE_BITS ?= 0
@@ -44,29 +43,31 @@ ifeq ($(call is-board-platform-in-list, $(UM_4_9_FAMILY)),true)
 endif
 
 # List of targets that use master side content protection
-MASTER_SIDE_CP_TARGET_LIST := msm8996 msm8998 sdm660
+MASTER_SIDE_CP_TARGET_LIST := msm8996 $(UM_4_4_FAMILY)
 
 # Every qcom platform is considered a vidc target
-MSM_VIDC_TARGET_LIST := $(TARGET_BOARD_PLATFORM)
-ifeq ($(call is-board-platform-in-list, $(A_FAMILY)),true)
+ifneq ($(filter $(A_FAMILY),$(TARGET_BOARD_PLATFORM)),)
+    MSM_VIDC_TARGET_LIST := $(A_FAMILY)
     QCOM_HARDWARE_VARIANT := msm8960
-else
-ifeq ($(call is-board-platform-in-list, $(B_FAMILY)),true)
+else ifneq ($(filter $(B_FAMILY),$(TARGET_BOARD_PLATFORM)),)
+    MSM_VIDC_TARGET_LIST := $(B_FAMILY)
     QCOM_HARDWARE_VARIANT := msm8974
-else
-ifeq ($(call is-board-platform-in-list, $(B64_FAMILY)),true)
+else ifneq ($(filter $(B64_FAMILY),$(TARGET_BOARD_PLATFORM)),)
+    MSM_VIDC_TARGET_LIST := $(B64_FAMILY)
     QCOM_HARDWARE_VARIANT := msm8994
-else
-ifeq ($(call is-board-platform-in-list, $(BR_FAMILY)),true)
+else ifneq ($(filter $(BR_FAMILY),$(TARGET_BOARD_PLATFORM)),)
+    MSM_VIDC_TARGET_LIST := $(BR_FAMILY)
     QCOM_HARDWARE_VARIANT := msm8916
-else
-ifeq ($(call is-board-platform-in-list, $(UM_FAMILY)),true)
+else ifneq ($(filter $(UM_3_18_FAMILY),$(TARGET_BOARD_PLATFORM)),)
+    MSM_VIDC_TARGET_LIST := $(UM_3_18_FAMILY)
     QCOM_HARDWARE_VARIANT := msm8996
+else ifneq ($(filter $(UM_4_4_FAMILY),$(TARGET_BOARD_PLATFORM)),)
+    MSM_VIDC_TARGET_LIST := $(UM_4_4_FAMILY)
+    QCOM_HARDWARE_VARIANT := msm8998
 else
+    MSM_VIDC_TARGET_LIST := $(TARGET_BOARD_PLATFORM)
     QCOM_HARDWARE_VARIANT := $(TARGET_BOARD_PLATFORM)
 endif
-endif
-endif
-endif
-endif
+
+# Allow a device to opt-out hardset of PRODUCT_SOONG_NAMESPACES
 PRODUCT_SOONG_NAMESPACES += hardware/qcom-caf/$(QCOM_HARDWARE_VARIANT)
