@@ -1,13 +1,19 @@
 # Bring in Qualcomm helper macros
 include vendor/extras/build/core/qcom_utils.mk
 
+# Platform names
+MSMNILE := msmnile #SM8150
+MSMSTEPPE := sm6150
+TRINKET := trinket #SM6125
+
 A_FAMILY := msm7x27a msm7x30 msm8660 msm8960
 B_FAMILY := msm8226 msm8610 msm8974
 B64_FAMILY := msm8992 msm8994
 BR_FAMILY := msm8909 msm8916
 UM_3_18_FAMILY := msm8937 msm8953 msm8996
 UM_4_4_FAMILY := msm8998 sdm660
-UM_PLATFORMS := $(UM_3_18_FAMILY) $(UM_4_4_FAMILY)
+UM_4_14_FAMILY := $(MSMNILE) $(MSMSTEPPE) $(TRINKET)
+UM_PLATFORMS := $(UM_3_18_FAMILY) $(UM_4_4_FAMILY) $(UM_4_14_FAMILY)
 
 BOARD_USES_ADRENO := true
 BOARD_USES_QTI_HARDWARE := true
@@ -38,12 +44,12 @@ TARGET_ADDITIONAL_GRALLOC_10_USAGE_BITS ?= 0
 TARGET_ADDITIONAL_GRALLOC_10_USAGE_BITS += | (1 << 21)
 
 # Mark GRALLOC_USAGE_PRIVATE_10BIT_TP as valid gralloc bits on UM platforms that support it
-ifeq ($(call is-board-platform-in-list, $(UM_4_9_FAMILY)),true)
+ifeq ($(call is-board-platform-in-list, $(UM_4_9_FAMILY) $(UM_4_14_FAMILY)),true)
     TARGET_ADDITIONAL_GRALLOC_10_USAGE_BITS += | (1 << 27)
 endif
 
 # List of targets that use master side content protection
-MASTER_SIDE_CP_TARGET_LIST := msm8996 $(UM_4_4_FAMILY)
+MASTER_SIDE_CP_TARGET_LIST := msm8996 $(UM_4_4_FAMILY) $(UM_4_14_FAMILY)
 
 # Every qcom platform is considered a vidc target
 ifneq ($(filter $(A_FAMILY),$(TARGET_BOARD_PLATFORM)),)
@@ -64,6 +70,9 @@ else ifneq ($(filter $(UM_3_18_FAMILY),$(TARGET_BOARD_PLATFORM)),)
 else ifneq ($(filter $(UM_4_4_FAMILY),$(TARGET_BOARD_PLATFORM)),)
     MSM_VIDC_TARGET_LIST := $(UM_4_4_FAMILY)
     QCOM_HARDWARE_VARIANT := msm8998
+else ifneq ($(filter $(UM_4_14_FAMILY),$(TARGET_BOARD_PLATFORM)),)
+    MSM_VIDC_TARGET_LIST := $(UM_4_14_FAMILY)
+    QCOM_HARDWARE_VARIANT := sm8150
 else
     MSM_VIDC_TARGET_LIST := $(TARGET_BOARD_PLATFORM)
     QCOM_HARDWARE_VARIANT := $(TARGET_BOARD_PLATFORM)
